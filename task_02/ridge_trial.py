@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 """
 Created on Thu May  3 01:15:17 2018
-
 @author: skhawy
 """
 
@@ -29,7 +28,6 @@ def cold_start_preprocessing(matrix, min_entries):
                   The input matrix to be preprocessed.
     min_entries : int
                   Minimum number of nonzero elements per row and column.
-
     Returns
     -------
     matrix      : sp.spmatrix, shape [N', D']
@@ -86,7 +84,6 @@ def shift_user_mean(matrix):
     
     user_means : np.array, shape [N, 1]
                  The mean rating per user that can be used to recover the absolute ratings from the mean-shifted ones.
-
     """
     
     ### YOUR CODE HERE ###
@@ -121,7 +118,6 @@ def split_data(matrix, n_validation, n_test):
                       The number of validation entries to extract.
     n_test          : int
                       The number of test entries to extract.
-
     Returns
     -------
     matrix_split    : sp.spmatrix, shape [N, D]
@@ -138,7 +134,6 @@ def split_data(matrix, n_validation, n_test):
                       
     test_values     : np.array, shape [n_test, ]
                       The values of the input matrix at the test indices.
-
     """
     '''
     ### YOUR CODE HERE ###
@@ -152,14 +147,12 @@ def split_data(matrix, n_validation, n_test):
     
     matrix_split.data[-n_validation:]=np.repeat(0,n_validation)
     #print("after",val_values)
-
     #test set
     test_idx_row  = matrix_split.nonzero()[0][:n_test]
     test_idx_col  = matrix_split.nonzero()[1][:n_test]
     test_idx      = list(zip(test_idx_row, test_idx_col))
     test_values   = matrix_split.data[:n_test].copy()
     #print("before",test_values)
-
     #setting elements to zero 
     matrix_split.data[:n_test]=np.repeat(0,n_test)
     #print("after",test_values)
@@ -217,12 +210,10 @@ def initialize_Q_P(matrix, k, init='random'):
     init   : str in ['svd', 'random'], default: 'random'
              The initialization strategy. 'svd' means that we use SVD to initialize P and Q, 'random' means we initialize
              the entries in P and Q randomly in the interval [0, 1).
-
     Returns
     -------
     Q : np.array, shape [N, k]
         The initialized matrix Q of a latent factor model.
-
     P : np.array, shape [k, D]
         The initialized matrix P of a latent factor model.
     """
@@ -295,7 +286,6 @@ def latent_factor_alternating_optimization(M, non_zero_idx, k, val_idx, val_valu
     eval_every        : int, optional, default: 1
                         Evaluate the training and validation loss every X steps. If we observe no improvement
                         of the validation error, we decrease our patience by 1, else we reset it to *patience*.
-
     Returns
     -------
     best_Q            : np.array, shape [N, k]
@@ -315,7 +305,6 @@ def latent_factor_alternating_optimization(M, non_zero_idx, k, val_idx, val_valu
     converged_after   : int
                         it - patience*eval_every, where it is the iteration in which patience hits 0,
                         or -1 if we hit max_steps before converging. 
-
     """
     ### YOUR CODE HERE ###
     def training_loss(Q,P,non_zero_idx):
@@ -355,10 +344,8 @@ def latent_factor_alternating_optimization(M, non_zero_idx, k, val_idx, val_valu
             reg = Ridge (alpha = reg_lambda)
             reg.fit(P[:,idx].T,M[x,idx].todense().A1)
             Q[x,]= reg.coef_
-        toc=time.time()
-        
+        toc=time.time()        
         #print("to update Q took time", toc-tic)
-        
         # update for P      
         D= M.shape[1]
         tic=time.time()
@@ -370,16 +357,11 @@ def latent_factor_alternating_optimization(M, non_zero_idx, k, val_idx, val_valu
             reg.fit(Q[idx,],M[idx,j].todense().A1)
             P[:,j]= reg.coef_
         toc=time.time()
-    
         #print("to update P took time", toc-tic)    
-
-        #get the values then print it 
         v_loss=validation_loss(Q,P,val_idx,val_values)
         t_loss=training_loss(Q,P,non_zero_idx)
         print("iteration "+ str(iteration)+", " + "training loss: "+ str(t_loss) + ", validation loss: " + str(v_loss))
 
-    
-    
     best_Q=Q
     best_P=P
     converged_after=0
